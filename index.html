@@ -148,6 +148,10 @@
 <script>
 
 
+/****************************************************
+ * APPS SCRIPT WEB APP
+ ****************************************************/
+
 const API_URL =
 
 "https://script.google.com/a/macros/spxexpress.com/s/AKfycby9ISjVWvbmycc55h-PmhoTov796QvJ8H47CuuYk-DKPFKApnLlU6ueSQ7HXNdUp0DUWQ/exec";
@@ -158,15 +162,21 @@ const PUBLIC_KEY =
 
 
 const input =
-document.getElementById("tracking");
+document.getElementById(
+  "tracking"
+);
 
 
 const loading =
-document.getElementById("loading");
+document.getElementById(
+  "loading"
+);
 
 
 const result =
-document.getElementById("result");
+document.getElementById(
+  "result"
+);
 
 
 /****************************************************
@@ -174,6 +184,7 @@ document.getElementById("result");
  ****************************************************/
 
 const scanner =
+
 new Html5QrcodeScanner(
 
   "reader",
@@ -183,8 +194,11 @@ new Html5QrcodeScanner(
     fps:10,
 
     qrbox:{
+
       width:280,
+
       height:160
+
     },
 
     rememberLastUsedCamera:true
@@ -201,22 +215,23 @@ scanner.render(
   function(decodedText){
 
     input.value =
-    decodedText;
+      decodedText;
 
 
     scanner.clear()
+
       .then(function(){
 
         search();
 
       });
 
-
   },
+
 
   function(error){
 
-    // Không hiển thị lỗi quét liên tục
+    // Không hiển thị lỗi liên tục
 
   }
 
@@ -233,7 +248,9 @@ input.addEventListener(
 
   function(e){
 
-    if(e.key === "Enter"){
+    if(
+      e.key === "Enter"
+    ){
 
       search();
 
@@ -245,14 +262,14 @@ input.addEventListener(
 
 
 /****************************************************
- * TRA CỨU TRỰC TIẾP
+ * TRA CỨU API
  ****************************************************/
 
-async function search(){
+function search(){
 
 
   const shipment =
-  input.value.trim();
+    input.value.trim();
 
 
   if(!shipment){
@@ -263,75 +280,103 @@ async function search(){
 
 
   loading.style.display =
-  "block";
+    "block";
 
 
   result.innerHTML =
-  "";
+    "";
 
 
-  try{
+  const callbackName =
+
+    "spxCallback_" +
+
+    Date.now();
 
 
-    const response =
-    await fetch(
+  const script =
 
-      API_URL,
-
-      {
-
-        method:"POST",
-
-        headers:{
-
-          "Content-Type":
-          "text/plain;charset=utf-8"
-
-        },
-
-        body:
-
-        JSON.stringify({
-
-          key:
-          PUBLIC_KEY,
-
-          shipment:
-          shipment
-
-        })
-
-      }
-
+    document.createElement(
+      "script"
     );
 
 
-    const data =
-    await response.json();
+  window[callbackName] =
+
+    function(data){
 
 
-    showResult(data);
+      loading.style.display =
+        "none";
 
 
-  }catch(error){
+      showResult(data);
 
 
-    result.innerHTML =
-
-    '<div class="error">' +
-
-    '❌ Không thể kết nối API<br><br>' +
-
-    error.message +
-
-    '</div>';
+      delete window[
+        callbackName
+      ];
 
 
-  }
+      script.remove();
+
+    };
 
 
-  loading.style.display =
-  "none";
+  script.src =
+
+    API_URL +
+
+    "?api=1" +
+
+    "&key=" +
+
+    encodeURIComponent(
+      PUBLIC_KEY
+    ) +
+
+    "&shipment=" +
+
+    encodeURIComponent(
+      shipment
+    ) +
+
+    "&callback=" +
+
+    callbackName;
+
+
+  script.onerror =
+
+    function(){
+
+
+      loading.style.display =
+        "none";
+
+
+      result.innerHTML =
+
+        '<div class="error">' +
+
+        '❌ Không thể kết nối API' +
+
+        '</div>';
+
+
+      delete window[
+        callbackName
+      ];
+
+
+      script.remove();
+
+    };
+
+
+  document.body.appendChild(
+    script
+  );
 
 }
 
@@ -340,18 +385,25 @@ async function search(){
  * TẠO DÒNG KẾT QUẢ
  ****************************************************/
 
-function row(title,value){
+function row(
+  title,
+  value
+){
 
   return `
 
     <div class="item">
 
       <div class="title">
+
         ${title}
+
       </div>
 
       <div class="value">
+
         ${value || "-"}
+
       </div>
 
     </div>
@@ -368,17 +420,19 @@ function row(title,value){
 function showResult(res){
 
 
-  if(!res.success){
+  if(
+    !res.success
+  ){
 
     result.innerHTML =
 
-    '<div class="error">' +
+      '<div class="error">' +
 
-    '❌ ' +
+      '❌ ' +
 
-    res.message +
+      res.message +
 
-    '</div>';
+      '</div>';
 
     return;
 
@@ -392,46 +446,53 @@ function showResult(res){
       res.shipment
     )
 
+
     +
+
 
     row(
       "📍 Trạm hiện tại",
       res.currentStation
     )
 
+
     +
+
 
     row(
       "➡️ Trạm tiếp theo",
       res.nextStation
     )
 
+
     +
+
 
     row(
       "🏷️ Sort Code",
       res.sortCode
     )
 
+
     +
+
 
     row(
       "📅 Ngày nhận tại trạm",
       res.currentStationReceivedTime
     )
 
+
     +
+
 
     row(
       "📋 Trạng thái đơn",
       res.orderStatus
     );
 
-
-  input.value =
-  "";
-
 }
+
 
 </script>
 
