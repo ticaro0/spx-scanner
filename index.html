@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>SPX Scanner</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+
+    body{
+      margin:0;
+      padding:20px;
+      background:#f5f5f5;
+      font-family:Arial,sans-serif;
+    }
+
+    .card{
+      max-width:600px;
+      margin:auto;
+      background:#fff;
+      padding:20px;
+      border-radius:15px;
+      box-shadow:0 3px 10px rgba(0,0,0,.15);
+    }
+
+    h2{
+      text-align:center;
+      color:#ee4d2d;
+    }
+
+    #reader{
+      width:100%;
+      margin-top:20px;
+    }
+
+    .message{
+      text-align:center;
+      margin-top:15px;
+      font-size:18px;
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+
+  <h2>
+    📷 SPX SCANNER
+  </h2>
+
+
+  <div id="reader"></div>
+
+
+  <div
+    class="message"
+    id="message"
+  >
+
+    Đưa mã vận đơn vào khung quét
+
+  </div>
+
+
+</div>
+
+
+<script>
+
+
+const SPX_WEB_APP =
+
+"https://script.google.com/a/macros/spxexpress.com/s/AKfycby9ISjVWvbmycc55h-PmhoTov796QvJ8H47CuuYk-DKPFKApnLlU6ueSQ7HXNdUp0DUWQ/exec";
+
+
+function onScanSuccess(decodedText){
+
+
+  document.getElementById(
+    "message"
+  ).innerText =
+
+    "Đã quét: " +
+
+    decodedText;
+
+
+  window.location.href =
+
+    SPX_WEB_APP +
+
+    "?shipment=" +
+
+    encodeURIComponent(
+      decodedText
+    );
+
+
+}
+
+
+function onScanFailure(error){
+
+  // Không hiển thị lỗi liên tục
+
+}
+
+
+const scanner =
+
+  new Html5QrcodeScanner(
+
+    "reader",
+
+    {
+
+      fps:10,
+
+      qrbox:{
+
+        width:280,
+
+        height:160
+
+      },
+
+      rememberLastUsedCamera:true
+
+    },
+
+    false
+
+  );
+
+
+scanner.render(
+
+  onScanSuccess,
+
+  onScanFailure
+
+);
+
+
+</script>
+
+
+</body>
+
+</html>
